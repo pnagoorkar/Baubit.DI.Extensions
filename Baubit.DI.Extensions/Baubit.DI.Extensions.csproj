@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    
+    <AssemblyVersion>$(AssemblyVersion)</AssemblyVersion>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <Deterministic>true</Deterministic>
+    <RepositoryUrl>https://github.com/pnagoorkar/Baubit.DI.Extensions</RepositoryUrl>
+    <Authors>Prashant Nagoorkar</Authors>
+    <SignAssembly>$(SignAssembly)</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(KeyFilePath)</AssemblyOriginatorKeyFile>
+    <EmitCompilerGeneratedFiles>false</EmitCompilerGeneratedFiles>
+    <Description>Extensions for Baubit.DI</Description>
+    <PackageTags>dependency-injection;di;modules;configuration;ioc;inversion-of-control;service-collection;hosting;netstandard;baubit</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../README.md" Pack="true" PackagePath="." />
+    <None Include="../LICENSE" Pack="true" PackagePath="." />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Baubit.DI" Version="2025.49.2" />
+  </ItemGroup>
+
+</Project>
