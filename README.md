@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Known Vulnerabilities](https://snyk.io/test/github/pnagoorkar/Baubit.DI.Extensions/badge.svg)](https://snyk.io/test/github/pnagoorkar/Baubit.DI.Extensions)
 
-Extensions for [Baubit.DI](https://github.com/pnagoorkar/Baubit.DI) modularity framework.
+Extensions for [Baubit.DI](https://github.com/pnagoorkar/Baubit.DI).
 
 ## Installation
 
@@ -15,39 +15,13 @@ Extensions for [Baubit.DI](https://github.com/pnagoorkar/Baubit.DI) modularity f
 dotnet add package Baubit.DI.Extensions
 ```
 
-## Overview
-
-This package provides `ComponentBuilder<T>`, a generic builder that creates a fully configured service from a collection of modules. It extends `ComponentBuilder` from Baubit.DI to resolve a specific service type after all modules have loaded their registrations.
-
-## Quick Start
+## Usage
 
 ```csharp
-// Define configuration and module
-public class MyConfiguration : AConfiguration
-{
-    public string ConnectionString { get; set; }
-}
+var result = ComponentBuilder.CreateNew()
+    .WithModule<MyModule, MyConfiguration>(cfg => cfg.ConnectionString = "Server=localhost")
+    .Build<IMyService>();
 
-public class MyModule : AModule<MyConfiguration>
-{
-    public MyModule(MyConfiguration configuration, List<IModule>? nestedModules = null)
-        : base(configuration, nestedModules) { }
-
-    public override void Load(IServiceCollection services)
-    {
-        services.AddSingleton<IMyService>(new MyService(Configuration.ConnectionString));
-        base.Load(services);
-    }
-}
-
-// Build and resolve service
-var builder = new ComponentBuilder<IMyService>();
-builder.WithModule<MyModule, MyConfiguration>(cfg =>
-{
-    cfg.ConnectionString = "Server=localhost;Database=mydb";
-});
-
-var result = builder.Build();
 if (result.IsSuccess)
 {
     IMyService service = result.Value;
@@ -56,22 +30,11 @@ if (result.IsSuccess)
 
 ## API Reference
 
-<details>
-<summary><strong>ComponentBuilder&lt;T&gt;</strong></summary>
-
-Generic builder for creating a configured service of type `T` from modules.
-
 | Method | Description |
 |--------|-------------|
-| `Build()` | Builds the component and resolves a service of type `T` |
-
-Inherits from `ComponentBuilder`:
-| Method | Description |
-|--------|-------------|
-| `WithModule<TModule, TConfiguration>(Action<TConfiguration>)` | Add a module with configuration |
-| `WithModulesFrom(params IComponent[])` | Add modules from existing components |
-
-</details>
+| `Build<T>(this IComponent)` | Resolves service of type `T` from a component |
+| `Build<T>(this Result<IComponent>)` | Resolves service of type `T` from a component result |
+| `Build<T>(this Result<ComponentBuilder>)` | Builds component and resolves service of type `T` |
 
 ## License
 
