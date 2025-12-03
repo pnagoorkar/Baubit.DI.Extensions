@@ -1,5 +1,4 @@
-﻿using Baubit.DI;
-using FluentResults;
+﻿using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
