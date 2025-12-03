@@ -20,11 +20,11 @@ dotnet add package Baubit.DI.Extensions
 ```csharp
 var result = ComponentBuilder.CreateNew()
     .WithModule<MyModule, MyConfiguration>(cfg => cfg.ConnectionString = "Server=localhost")
-    .Build<IMyService>();
+    .BuildServiceProvider();
 
 if (result.IsSuccess)
 {
-    IMyService service = result.Value;
+    IServiceProvider serviceProvider = result.Value;
 }
 ```
 
@@ -32,9 +32,9 @@ if (result.IsSuccess)
 
 | Method | Description |
 |--------|-------------|
-| `Build<T>(this IComponent)` | Resolves service of type `T` from a component |
-| `Build<T>(this Result<IComponent>)` | Resolves service of type `T` from a component result |
-| `Build<T>(this Result<ComponentBuilder>)` | Builds component and resolves service of type `T` |
+| `BuildServiceProvider(this IComponent)` | Builds a service provider from a component |
+| `BuildServiceProvider(this Result<IComponent>)` | Builds a service provider from a component result |
+| `BuildServiceProvider(this Result<ComponentBuilder>)` | Builds component and creates a service provider |
 
 ## License
 
