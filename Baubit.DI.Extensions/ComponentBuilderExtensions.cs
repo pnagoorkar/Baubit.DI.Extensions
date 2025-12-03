@@ -1,65 +1,69 @@
-﻿using Baubit.DI;
+﻿using System;
+using Baubit.DI;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Baubit.DI.Extensions
 {
     /// <summary>
-    /// Extension methods for building and resolving services from <see cref="IComponent"/>.
+    /// Extension methods for building a service provider from <see cref="IComponent"/>.
     /// </summary>
     public static class ComponentBuilderExtensions
     {
         /// <summary>
-        /// Builds a service of type <typeparamref name="T"/> from the component's modules.
+        /// Builds a service provider from the component's modules.
         /// </summary>
-        /// <typeparam name="T">The type of service to resolve.</typeparam>
         /// <param name="component">The component containing modules.</param>
         /// <returns>
-        /// A <see cref="Result{T}"/> containing the resolved service if successful,
-        /// or failure information if resolution fails.
+        /// A <see cref="Result{T}"/> containing the service provider if successful,
+        /// or failure information if the build fails.
         /// </returns>
-        public static Result<T> Build<T>(this IComponent component) where T : class
+        /// <remarks>
+        /// The caller is responsible for disposing the returned <see cref="IServiceProvider"/>.
+        /// </remarks>
+        public static Result<IServiceProvider> BuildServiceProvider(this IComponent component)
         {
-            return Result.Try(() =>
+            return Result.Try<IServiceProvider>(() =>
             {
                 var services = new ServiceCollection();
                 foreach (var module in component)
                 {
                     module.Load(services);
                 }
-                using (var serviceProvider = services.BuildServiceProvider())
-                {
-                    return serviceProvider.GetRequiredService<T>();
-                }
+                return services.BuildServiceProvider();
             });
         }
 
         /// <summary>
-        /// Builds a service of type <typeparamref name="T"/> from a component result.
+        /// Builds a service provider from a component result.
         /// </summary>
-        /// <typeparam name="T">The type of service to resolve.</typeparam>
         /// <param name="result">The result containing the component.</param>
         /// <returns>
-        /// A <see cref="Result{T}"/> containing the resolved service if successful,
-        /// or failure information if the build or resolution fails.
+        /// A <see cref="Result{T}"/> containing the service provider if successful,
+        /// or failure information if the build fails.
         /// </returns>
-        public static Result<T> Build<T>(this Result<IComponent> result) where T : class
+        /// <remarks>
+        /// The caller is responsible for disposing the returned <see cref="IServiceProvider"/>.
+        /// </remarks>
+        public static Result<IServiceProvider> BuildServiceProvider(this Result<IComponent> result)
         {
-            return result.Bind(component => Build<T>(component));
+            return result.Bind(component => component.BuildServiceProvider());
         }
 
         /// <summary>
-        /// Builds the component and resolves a service of type <typeparamref name="T"/>.
+        /// Builds the component and creates a service provider.
         /// </summary>
-        /// <typeparam name="T">The type of service to resolve.</typeparam>
         /// <param name="result">The result containing the component builder.</param>
         /// <returns>
-        /// A <see cref="Result{T}"/> containing the resolved service if successful,
-        /// or failure information if the build or resolution fails.
+        /// A <see cref="Result{T}"/> containing the service provider if successful,
+        /// or failure information if the build fails.
         /// </returns>
-        public static Result<T> Build<T>(this Result<ComponentBuilder> result) where T : class
+        /// <remarks>
+        /// The caller is responsible for disposing the returned <see cref="IServiceProvider"/>.
+        /// </remarks>
+        public static Result<IServiceProvider> BuildServiceProvider(this Result<ComponentBuilder> result)
         {
-            return result.Build().Bind(component => Build<T>(component));
+            return result.Build().BuildServiceProvider();
         }
     }
 }

@@ -10,87 +10,79 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
     public class Test
     {
         [Fact]
-        public void Build_OnResultComponentBuilder_WithValidModule_ReturnsResolvedService()
-        {
-            // Arrange & Act
-            var result = ComponentBuilder.CreateNew()
-                .WithModule<TestModule, TestConfiguration>(cfg => cfg.Value = "TestValue")
-                .Build<ITestService>();
-
-            // Assert
-            Assert.True(result.IsSuccess, $"Build failed: {string.Join(", ", result.Errors)}");
-            Assert.NotNull(result.Value);
-            Assert.IsAssignableFrom<ITestService>(result.Value);
-            Assert.Equal("TestValue", result.Value.GetValue());
-        }
-
-        [Fact]
-        public void Build_OnResultComponentBuilder_WithNoModules_ReturnsFailure()
-        {
-            // Arrange & Act
-            var result = ComponentBuilder.CreateNew()
-                .Build<ITestService>();
-
-            // Assert
-            Assert.True(result.IsFailed);
-        }
-
-        [Fact]
-        public void Build_OnResultComponentBuilder_WithMultipleModules_AllModulesAreLoaded()
-        {
-            // Arrange & Act
-            var result = ComponentBuilder.CreateNew()
-                .WithModule<DependencyModule, DependencyConfiguration>(cfg => cfg.DependencyValue = "DependencyData")
-                .WithModule<TestModule, TestConfiguration>(cfg => cfg.Value = "MainValue")
-                .Build<ITestService>();
-
-            // Assert
-            Assert.True(result.IsSuccess, $"Build failed: {string.Join(", ", result.Errors)}");
-            Assert.NotNull(result.Value);
-            Assert.Equal("MainValue", result.Value.GetValue());
-        }
-
-        [Fact]
-        public void Build_OnIComponent_ReturnsResolvedService()
+        public void BuildServiceProvider_OnIComponent_ReturnsServiceProvider()
         {
             // Arrange
             var componentResult = ComponentBuilder.CreateNew()
-                .WithModule<TestModule, TestConfiguration>(cfg => cfg.Value = "DirectValue")
+                .WithModule<TestModule, TestConfiguration>(cfg => cfg.Value = "TestValue")
                 .Build();
             Assert.True(componentResult.IsSuccess);
-            
+
             // Act
-            var result = componentResult.Value.Build<ITestService>();
+            var result = componentResult.Value.BuildServiceProvider();
 
             // Assert
-            Assert.True(result.IsSuccess, $"Build failed: {string.Join(", ", result.Errors)}");
-            Assert.Equal("DirectValue", result.Value.GetValue());
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            var service = result.Value.GetService<ITestService>();
+            Assert.NotNull(service);
+            Assert.Equal("TestValue", service.GetValue());
         }
 
         [Fact]
-        public void Build_OnResultIComponent_Success_ReturnsResolvedService()
+        public void BuildServiceProvider_OnResultIComponent_Success_ReturnsServiceProvider()
         {
             // Arrange
             var componentResult = ComponentBuilder.CreateNew()
                 .WithModule<TestModule, TestConfiguration>(cfg => cfg.Value = "ResultValue")
                 .Build();
 
-            // Act - call the Result<IComponent> extension method
-            var result = componentResult.Build<ITestService>();
+            // Act
+            var result = componentResult.BuildServiceProvider();
 
             // Assert
-            Assert.True(result.IsSuccess, $"Build failed: {string.Join(", ", result.Errors)}");
-            Assert.Equal("ResultValue", result.Value.GetValue());
+            Assert.True(result.IsSuccess);
+            var service = result.Value.GetService<ITestService>();
+            Assert.NotNull(service);
+            Assert.Equal("ResultValue", service.GetValue());
         }
 
         [Fact]
-        public void Build_OnResultIComponent_Failure_ReturnsFailure()
+        public void BuildServiceProvider_OnResultIComponent_Failure_ReturnsFailure()
         {
-            // Arrange - create a failed Result<IComponent>
+            // Arrange
             var failedResult = Result.Fail<IComponent>("Test failure");
 
             // Act
-            var result = failedResult.Build<ITestService>();
+            var result = failedResult.BuildServiceProvider();
+
+            // Assert
+            Assert.True(result.IsFailed);
+        }
+
+        [Fact]
+        public void BuildServiceProvider_OnResultComponentBuilder_ReturnsServiceProvider()
+        {
+            // Arrange & Act
+            var result = ComponentBuilder.CreateNew()
+                .WithModule<TestModule, TestConfiguration>(cfg => cfg.Value = "BuilderValue")
+                .BuildServiceProvider();
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            var service = result.Value.GetService<ITestService>();
+            Assert.NotNull(service);
+            Assert.Equal("BuilderValue", service.GetValue());
+        }
+
+        [Fact]
+        public void BuildServiceProvider_OnResultComponentBuilder_Failure_ReturnsFailure()
+        {
+            // Arrange
+            var failedResult = Result.Fail<ComponentBuilder>("Builder failure");
+
+            // Act
+            var result = failedResult.BuildServiceProvider();
 
             // Assert
             Assert.True(result.IsFailed);
@@ -102,11 +94,6 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
     public interface ITestService
     {
         string GetValue();
-    }
-
-    public interface IDependencyService
-    {
-        string GetDependencyValue();
     }
 
     public class TestService : ITestService
@@ -121,26 +108,9 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
         public string GetValue() => _value;
     }
 
-    public class DependencyService : IDependencyService
-    {
-        private readonly string _value;
-
-        public DependencyService(string value)
-        {
-            _value = value;
-        }
-
-        public string GetDependencyValue() => _value;
-    }
-
     public class TestConfiguration : AConfiguration
     {
         public string Value { get; set; } = string.Empty;
-    }
-
-    public class DependencyConfiguration : AConfiguration
-    {
-        public string DependencyValue { get; set; } = string.Empty;
     }
 
     public class TestModule : AModule<TestConfiguration>
@@ -153,20 +123,6 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
         public override void Load(IServiceCollection services)
         {
             services.AddSingleton<ITestService>(new TestService(Configuration.Value));
-            base.Load(services);
-        }
-    }
-
-    public class DependencyModule : AModule<DependencyConfiguration>
-    {
-        public DependencyModule(DependencyConfiguration configuration, List<IModule>? nestedModules = null)
-            : base(configuration, nestedModules)
-        {
-        }
-
-        public override void Load(IServiceCollection services)
-        {
-            services.AddSingleton<IDependencyService>(new DependencyService(Configuration.DependencyValue));
             base.Load(services);
         }
     }
