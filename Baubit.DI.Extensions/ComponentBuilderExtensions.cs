@@ -1,7 +1,8 @@
-﻿using System;
-using Baubit.DI;
+﻿using Baubit.Configuration;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
 
 namespace Baubit.DI.Extensions
 {
@@ -10,6 +11,37 @@ namespace Baubit.DI.Extensions
     /// </summary>
     public static class ComponentBuilderExtensions
     {
+        public static Result<IServiceCollection> AddModule<TModule, TConfiguration>(this IServiceCollection services,
+                                                                                    Action<TConfiguration> configureAction) where TModule : AModule<TConfiguration> where TConfiguration : AConfiguration
+        {
+            return ComponentBuilder.CreateNew()
+                                   .WithModule<TModule, TConfiguration>(configureAction)
+                                   .Build()
+                                   .Bind(component => component.LoadModules(services));
+        }
+
+        public static Result<IServiceCollection> AddModule<TModule, TConfiguration>(this IServiceCollection services,
+                                                                                    Action<ConfigurationBuilder<TConfiguration>> configureAction) where TModule : AModule<TConfiguration> where TConfiguration : AConfiguration
+        {
+            return ComponentBuilder.CreateNew()
+                                   .WithModule<TModule, TConfiguration>(configureAction)
+                                   .Build()
+                                   .Bind(component => component.LoadModules(services));
+        }
+
+        private static Result<IServiceCollection> LoadModules(this IEnumerable<IModule> modules, IServiceCollection services = null)
+        {
+            return Result.Try(() => 
+            {
+                if (services == null) services = new ServiceCollection();
+                services = new ServiceCollection();
+                foreach (var module in modules)
+                {
+                    module.Load(services);
+                }
+                return services;
+            });
+        }
         /// <summary>
         /// Builds a service provider from the component's modules.
         /// </summary>
@@ -21,17 +53,9 @@ namespace Baubit.DI.Extensions
         /// <remarks>
         /// The caller is responsible for disposing the returned <see cref="IServiceProvider"/>.
         /// </remarks>
-        public static Result<IServiceProvider> BuildServiceProvider(this IComponent component)
+        public static Result<IServiceProvider> BuildServiceProvider(this IComponent component, IServiceCollection services = null)
         {
-            return Result.Try<IServiceProvider>(() =>
-            {
-                var services = new ServiceCollection();
-                foreach (var module in component)
-                {
-                    module.Load(services);
-                }
-                return services.BuildServiceProvider();
-            });
+            return component.LoadModules(services).Bind(s => Result.Try<IServiceProvider>(() => s.BuildServiceProvider()));
         }
 
         /// <summary>
@@ -45,9 +69,9 @@ namespace Baubit.DI.Extensions
         /// <remarks>
         /// The caller is responsible for disposing the returned <see cref="IServiceProvider"/>.
         /// </remarks>
-        public static Result<IServiceProvider> BuildServiceProvider(this Result<IComponent> result)
+        public static Result<IServiceProvider> BuildServiceProvider(this Result<IComponent> result, IServiceCollection services = null)
         {
-            return result.Bind(component => component.BuildServiceProvider());
+            return result.Bind(component => component.BuildServiceProvider(services));
         }
 
         /// <summary>
@@ -61,9 +85,9 @@ namespace Baubit.DI.Extensions
         /// <remarks>
         /// The caller is responsible for disposing the returned <see cref="IServiceProvider"/>.
         /// </remarks>
-        public static Result<IServiceProvider> BuildServiceProvider(this Result<ComponentBuilder> result)
+        public static Result<IServiceProvider> BuildServiceProvider(this Result<ComponentBuilder> result, IServiceCollection services = null)
         {
-            return result.Build().BuildServiceProvider();
+            return result.Build().BuildServiceProvider(services);
         }
     }
 }
