@@ -34,7 +34,6 @@ namespace Baubit.DI.Extensions
             return Result.Try(() => 
             {
                 if (services == null) services = new ServiceCollection();
-                services = new ServiceCollection();
                 foreach (var module in modules)
                 {
                     module.Load(services);
