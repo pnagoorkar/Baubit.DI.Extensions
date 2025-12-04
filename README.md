@@ -17,6 +17,24 @@ dotnet add package Baubit.DI.Extensions
 
 ## Usage
 
+### Adding Modules Directly to IServiceCollection
+
+```csharp
+// Using configuration action with fluent chaining
+var provider = new ServiceCollection()
+    .AddModule<MyModule, MyConfiguration>(cfg => cfg.ConnectionString = "Server=localhost")
+    .AddSingleton<ILogger, ConsoleLogger>()
+    .BuildServiceProvider();
+
+// Using configuration builder action
+var provider = new ServiceCollection()
+    .AddModule<MyModule, MyConfiguration>(builder => 
+        builder.WithRawJsonStrings("{\"ConnectionString\": \"Server=localhost\"}"))
+    .BuildServiceProvider();
+```
+
+### Building Service Provider from ComponentBuilder
+
 ```csharp
 var result = ComponentBuilder.CreateNew()
     .WithModule<MyModule, MyConfiguration>(cfg => cfg.ConnectionString = "Server=localhost")
@@ -32,9 +50,11 @@ if (result.IsSuccess)
 
 | Method | Description |
 |--------|-------------|
-| `BuildServiceProvider(this IComponent)` | Builds a service provider from a component |
-| `BuildServiceProvider(this Result<IComponent>)` | Builds a service provider from a component result |
-| `BuildServiceProvider(this Result<ComponentBuilder>)` | Builds component and creates a service provider |
+| `AddModule<TModule, TConfiguration>(this IServiceCollection, Action<TConfiguration>)` | Adds a module to the service collection using configuration action |
+| `AddModule<TModule, TConfiguration>(this IServiceCollection, Action<ConfigurationBuilder<TConfiguration>>)` | Adds a module to the service collection using configuration builder action |
+| `BuildServiceProvider(this IComponent, IServiceCollection?)` | Builds a service provider from a component |
+| `BuildServiceProvider(this Result<IComponent>, IServiceCollection?)` | Builds a service provider from a component result |
+| `BuildServiceProvider(this Result<ComponentBuilder>, IServiceCollection?)` | Builds component and creates a service provider |
 
 ## License
 
