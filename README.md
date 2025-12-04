@@ -20,19 +20,17 @@ dotnet add package Baubit.DI.Extensions
 ### Adding Modules Directly to IServiceCollection
 
 ```csharp
-// Using configuration action
-var services = new ServiceCollection();
-var result = services.AddModule<MyModule, MyConfiguration>(cfg => cfg.ConnectionString = "Server=localhost");
-
-if (result.IsSuccess)
-{
-    IServiceProvider serviceProvider = result.Value.BuildServiceProvider();
-}
+// Using configuration action with fluent chaining
+var provider = new ServiceCollection()
+    .AddModule<MyModule, MyConfiguration>(cfg => cfg.ConnectionString = "Server=localhost")
+    .AddSingleton<ILogger, ConsoleLogger>()
+    .BuildServiceProvider();
 
 // Using configuration builder action
-var services = new ServiceCollection();
-var result = services.AddModule<MyModule, MyConfiguration>(builder => 
-    builder.WithRawJsonStrings("{\"ConnectionString\": \"Server=localhost\"}"));
+var provider = new ServiceCollection()
+    .AddModule<MyModule, MyConfiguration>(builder => 
+        builder.WithRawJsonStrings("{\"ConnectionString\": \"Server=localhost\"}"))
+    .BuildServiceProvider();
 ```
 
 ### Building Service Provider from ComponentBuilder

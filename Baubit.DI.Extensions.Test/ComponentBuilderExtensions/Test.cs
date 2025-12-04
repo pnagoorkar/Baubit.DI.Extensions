@@ -22,9 +22,8 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
             var result = services.AddModule<TestModule, TestConfiguration>(cfg => cfg.Value = "TestValue");
 
             // Assert
-            Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Value);
-            var provider = result.Value.BuildServiceProvider();
+            Assert.Same(services, result);
+            var provider = result.BuildServiceProvider();
             var service = provider.GetService<ITestService>();
             Assert.NotNull(service);
             Assert.Equal("TestValue", service.GetValue());
@@ -40,9 +39,8 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
             var result = services.AddModule<TestModule, TestConfiguration>(builder => builder.WithRawJsonStrings("{\"Value\": \"BuilderValue\"}"));
 
             // Assert
-            Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Value);
-            var provider = result.Value.BuildServiceProvider();
+            Assert.Same(services, result);
+            var provider = result.BuildServiceProvider();
             var service = provider.GetService<ITestService>();
             Assert.NotNull(service);
             Assert.Equal("BuilderValue", service.GetValue());
@@ -59,12 +57,29 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
             var result = services.AddModule<TestModule, TestConfiguration>(cfg => cfg.Value = "TestValue");
 
             // Assert
-            Assert.True(result.IsSuccess);
-            var provider = result.Value.BuildServiceProvider();
+            Assert.Same(services, result);
+            var provider = result.BuildServiceProvider();
             var existingService = provider.GetService<IExistingService>();
             var testService = provider.GetService<ITestService>();
             Assert.NotNull(existingService);
             Assert.NotNull(testService);
+        }
+
+        [Fact]
+        public void AddModule_AllowsFluentChaining()
+        {
+            // Arrange & Act
+            var provider = new ServiceCollection()
+                .AddModule<TestModule, TestConfiguration>(cfg => cfg.Value = "First")
+                .AddSingleton<IExistingService, ExistingService>()
+                .BuildServiceProvider();
+
+            // Assert
+            var testService = provider.GetService<ITestService>();
+            var existingService = provider.GetService<IExistingService>();
+            Assert.NotNull(testService);
+            Assert.NotNull(existingService);
+            Assert.Equal("First", testService.GetValue());
         }
 
         #endregion

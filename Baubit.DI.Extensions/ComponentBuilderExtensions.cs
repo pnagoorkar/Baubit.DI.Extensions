@@ -18,17 +18,18 @@ namespace Baubit.DI.Extensions
         /// <typeparam name="TConfiguration">The configuration type for the module.</typeparam>
         /// <param name="services">The service collection to add the module to.</param>
         /// <param name="configureAction">Action to configure the module.</param>
-        /// <returns>
-        /// A <see cref="Result{T}"/> containing the service collection if successful,
-        /// or failure information if the operation fails.
-        /// </returns>
-        public static Result<IServiceCollection> AddModule<TModule, TConfiguration>(this IServiceCollection services,
-                                                                                    Action<TConfiguration> configureAction) where TModule : AModule<TConfiguration> where TConfiguration : AConfiguration
+        /// <returns>The service collection for fluent chaining.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when module loading fails.</exception>
+        public static IServiceCollection AddModule<TModule, TConfiguration>(this IServiceCollection services,
+                                                                            Action<TConfiguration> configureAction) where TModule : AModule<TConfiguration> where TConfiguration : AConfiguration
         {
-            return ComponentBuilder.CreateNew()
-                                   .WithModule<TModule, TConfiguration>(configureAction)
-                                   .Build()
-                                   .Bind(component => component.LoadModules(services));
+            var result = ComponentBuilder.CreateNew()
+                                         .WithModule<TModule, TConfiguration>(configureAction)
+                                         .Build()
+                                         .Bind(component => component.LoadModules(services));
+            if (result.IsFailed)
+                throw new InvalidOperationException(string.Join("; ", result.Errors));
+            return services;
         }
 
         /// <summary>
@@ -38,17 +39,18 @@ namespace Baubit.DI.Extensions
         /// <typeparam name="TConfiguration">The configuration type for the module.</typeparam>
         /// <param name="services">The service collection to add the module to.</param>
         /// <param name="configureAction">Action to configure the module using a configuration builder.</param>
-        /// <returns>
-        /// A <see cref="Result{T}"/> containing the service collection if successful,
-        /// or failure information if the operation fails.
-        /// </returns>
-        public static Result<IServiceCollection> AddModule<TModule, TConfiguration>(this IServiceCollection services,
-                                                                                    Action<ConfigurationBuilder<TConfiguration>> configureAction) where TModule : AModule<TConfiguration> where TConfiguration : AConfiguration
+        /// <returns>The service collection for fluent chaining.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when module loading fails.</exception>
+        public static IServiceCollection AddModule<TModule, TConfiguration>(this IServiceCollection services,
+                                                                            Action<ConfigurationBuilder<TConfiguration>> configureAction) where TModule : AModule<TConfiguration> where TConfiguration : AConfiguration
         {
-            return ComponentBuilder.CreateNew()
-                                   .WithModule<TModule, TConfiguration>(configureAction)
-                                   .Build()
-                                   .Bind(component => component.LoadModules(services));
+            var result = ComponentBuilder.CreateNew()
+                                         .WithModule<TModule, TConfiguration>(configureAction)
+                                         .Build()
+                                         .Bind(component => component.LoadModules(services));
+            if (result.IsFailed)
+                throw new InvalidOperationException(string.Join("; ", result.Errors));
+            return services;
         }
 
         private static Result<IServiceCollection> LoadModules(this IEnumerable<IModule> modules, IServiceCollection services = null)
