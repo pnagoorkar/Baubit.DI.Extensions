@@ -1,4 +1,5 @@
-﻿using Baubit.DI;
+﻿using Baubit.Configuration;
+using Baubit.DI;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,6 +10,67 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
     /// </summary>
     public class Test
     {
+        #region AddModule Tests
+
+        [Fact]
+        public void AddModule_WithConfigurationAction_ReturnsServiceCollectionWithModule()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            // Act
+            var result = services.AddModule<TestModule, TestConfiguration>(cfg => cfg.Value = "TestValue");
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            var provider = result.Value.BuildServiceProvider();
+            var service = provider.GetService<ITestService>();
+            Assert.NotNull(service);
+            Assert.Equal("TestValue", service.GetValue());
+        }
+
+        [Fact]
+        public void AddModule_WithConfigurationBuilderAction_ReturnsServiceCollectionWithModule()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            // Act
+            var result = services.AddModule<TestModule, TestConfiguration>(builder => builder.WithRawJsonStrings("{\"Value\": \"BuilderValue\"}"));
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            var provider = result.Value.BuildServiceProvider();
+            var service = provider.GetService<ITestService>();
+            Assert.NotNull(service);
+            Assert.Equal("BuilderValue", service.GetValue());
+        }
+
+        [Fact]
+        public void AddModule_WithExistingServices_AddsToExistingCollection()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<IExistingService, ExistingService>();
+
+            // Act
+            var result = services.AddModule<TestModule, TestConfiguration>(cfg => cfg.Value = "TestValue");
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            var provider = result.Value.BuildServiceProvider();
+            var existingService = provider.GetService<IExistingService>();
+            var testService = provider.GetService<ITestService>();
+            Assert.NotNull(existingService);
+            Assert.NotNull(testService);
+        }
+
+        #endregion
+
+        #region BuildServiceProvider Tests
+
         [Fact]
         public void BuildServiceProvider_OnIComponent_ReturnsServiceProvider()
         {
@@ -87,6 +149,8 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
             // Assert
             Assert.True(result.IsFailed);
         }
+
+        #endregion
     }
 
     #region Test Helpers
@@ -106,6 +170,16 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
         }
 
         public string GetValue() => _value;
+    }
+
+    public interface IExistingService
+    {
+        string GetName();
+    }
+
+    public class ExistingService : IExistingService
+    {
+        public string GetName() => "ExistingService";
     }
 
     public class TestConfiguration : AConfiguration

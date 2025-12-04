@@ -11,6 +11,17 @@ namespace Baubit.DI.Extensions
     /// </summary>
     public static class ComponentBuilderExtensions
     {
+        /// <summary>
+        /// Adds a module to the service collection using configuration action.
+        /// </summary>
+        /// <typeparam name="TModule">The module type to add.</typeparam>
+        /// <typeparam name="TConfiguration">The configuration type for the module.</typeparam>
+        /// <param name="services">The service collection to add the module to.</param>
+        /// <param name="configureAction">Action to configure the module.</param>
+        /// <returns>
+        /// A <see cref="Result{T}"/> containing the service collection if successful,
+        /// or failure information if the operation fails.
+        /// </returns>
         public static Result<IServiceCollection> AddModule<TModule, TConfiguration>(this IServiceCollection services,
                                                                                     Action<TConfiguration> configureAction) where TModule : AModule<TConfiguration> where TConfiguration : AConfiguration
         {
@@ -20,6 +31,17 @@ namespace Baubit.DI.Extensions
                                    .Bind(component => component.LoadModules(services));
         }
 
+        /// <summary>
+        /// Adds a module to the service collection using a configuration builder action.
+        /// </summary>
+        /// <typeparam name="TModule">The module type to add.</typeparam>
+        /// <typeparam name="TConfiguration">The configuration type for the module.</typeparam>
+        /// <param name="services">The service collection to add the module to.</param>
+        /// <param name="configureAction">Action to configure the module using a configuration builder.</param>
+        /// <returns>
+        /// A <see cref="Result{T}"/> containing the service collection if successful,
+        /// or failure information if the operation fails.
+        /// </returns>
         public static Result<IServiceCollection> AddModule<TModule, TConfiguration>(this IServiceCollection services,
                                                                                     Action<ConfigurationBuilder<TConfiguration>> configureAction) where TModule : AModule<TConfiguration> where TConfiguration : AConfiguration
         {
@@ -45,6 +67,7 @@ namespace Baubit.DI.Extensions
         /// Builds a service provider from the component's modules.
         /// </summary>
         /// <param name="component">The component containing modules.</param>
+        /// <param name="services">Optional existing service collection to add modules to. If null, a new collection is created.</param>
         /// <returns>
         /// A <see cref="Result{T}"/> containing the service provider if successful,
         /// or failure information if the build fails.
@@ -61,6 +84,7 @@ namespace Baubit.DI.Extensions
         /// Builds a service provider from a component result.
         /// </summary>
         /// <param name="result">The result containing the component.</param>
+        /// <param name="services">Optional existing service collection to add modules to. If null, a new collection is created.</param>
         /// <returns>
         /// A <see cref="Result{T}"/> containing the service provider if successful,
         /// or failure information if the build fails.
@@ -77,6 +101,7 @@ namespace Baubit.DI.Extensions
         /// Builds the component and creates a service provider.
         /// </summary>
         /// <param name="result">The result containing the component builder.</param>
+        /// <param name="services">Optional existing service collection to add modules to. If null, a new collection is created.</param>
         /// <returns>
         /// A <see cref="Result{T}"/> containing the service provider if successful,
         /// or failure information if the build fails.
