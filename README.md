@@ -23,14 +23,17 @@ dotnet add package Baubit.DI.Extensions
 ```csharp
 // Using configuration action with fluent chaining
 var provider = new ServiceCollection()
-    .AddModule<MyModule, MyConfiguration>(cfg => cfg.ConnectionString = "Server=localhost")
+    .AddModule<MyModule, MyConfiguration>(
+        cfg => cfg.ConnectionString = "Server=localhost",
+        cfg => new MyModule(cfg))
     .AddSingleton<ILogger, ConsoleLogger>()
     .BuildServiceProvider();
 
 // Using configuration builder action
 var provider = new ServiceCollection()
-    .AddModule<MyModule, MyConfiguration>(builder => 
-        builder.WithRawJsonStrings("{\"ConnectionString\": \"Server=localhost\"}"))
+    .AddModule<MyModule, MyConfiguration>(
+        builder => builder.WithRawJsonStrings("{\"ConnectionString\": \"Server=localhost\"}"),
+        cfg => new MyModule(cfg))
     .BuildServiceProvider();
 ```
 
@@ -38,7 +41,9 @@ var provider = new ServiceCollection()
 
 ```csharp
 var result = ComponentBuilder.CreateNew()
-    .WithModule<MyModule, MyConfiguration>(cfg => cfg.ConnectionString = "Server=localhost")
+    .WithModule<MyModule, MyConfiguration>(
+        cfg => cfg.ConnectionString = "Server=localhost",
+        cfg => new MyModule(cfg))
     .BuildServiceProvider();
 
 if (result.IsSuccess)
@@ -51,8 +56,8 @@ if (result.IsSuccess)
 
 | Method | Description |
 |--------|-------------|
-| `AddModule<TModule, TConfiguration>(this IServiceCollection, Action<TConfiguration>)` | Adds a module to the service collection using configuration action |
-| `AddModule<TModule, TConfiguration>(this IServiceCollection, Action<ConfigurationBuilder<TConfiguration>>)` | Adds a module to the service collection using configuration builder action |
+| `AddModule<TModule, TConfiguration>(this IServiceCollection, Action<TConfiguration>, Func<TConfiguration, TModule>)` | Adds a module to the service collection using configuration action and module factory |
+| `AddModule<TModule, TConfiguration>(this IServiceCollection, Action<ConfigurationBuilder<TConfiguration>>, Func<TConfiguration, TModule>)` | Adds a module to the service collection using configuration builder action and module factory |
 | `BuildServiceProvider(this IComponent, IServiceCollection?)` | Builds a service provider from a component |
 | `BuildServiceProvider(this Result<IComponent>, IServiceCollection?)` | Builds a service provider from a component result |
 | `BuildServiceProvider(this Result<ComponentBuilder>, IServiceCollection?)` | Builds component and creates a service provider |
