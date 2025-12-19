@@ -19,7 +19,7 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
             var services = new ServiceCollection();
 
             // Act
-            var result = services.AddModule<TestModule, TestConfiguration>(cfg => cfg.Value = "TestValue");
+            var result = services.AddModule<TestModule, TestConfiguration>(cfg => cfg.Value = "TestValue", cfg => new TestModule(cfg));
 
             // Assert
             Assert.Same(services, result);
@@ -36,7 +36,7 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
             var services = new ServiceCollection();
 
             // Act
-            var result = services.AddModule<TestModule, TestConfiguration>(builder => builder.WithRawJsonStrings("{\"Value\": \"BuilderValue\"}"));
+            var result = services.AddModule<TestModule, TestConfiguration>(builder => builder.WithRawJsonStrings("{\"Value\": \"BuilderValue\"}"), cfg => new TestModule(cfg));
 
             // Assert
             Assert.Same(services, result);
@@ -54,7 +54,7 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
             services.AddSingleton<IExistingService, ExistingService>();
 
             // Act
-            var result = services.AddModule<TestModule, TestConfiguration>(cfg => cfg.Value = "TestValue");
+            var result = services.AddModule<TestModule, TestConfiguration>(cfg => cfg.Value = "TestValue", cfg => new TestModule(cfg));
 
             // Assert
             Assert.Same(services, result);
@@ -70,7 +70,7 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
         {
             // Arrange & Act
             var provider = new ServiceCollection()
-                .AddModule<TestModule, TestConfiguration>(cfg => cfg.Value = "First")
+                .AddModule<TestModule, TestConfiguration>(cfg => cfg.Value = "First", cfg => new TestModule(cfg))
                 .AddSingleton<IExistingService, ExistingService>()
                 .BuildServiceProvider();
 
@@ -91,7 +91,7 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
         {
             // Arrange
             var componentResult = ComponentBuilder.CreateNew()
-                .WithModule<TestModule, TestConfiguration>(cfg => cfg.Value = "TestValue")
+                .WithModule<TestModule, TestConfiguration>(cfg => cfg.Value = "TestValue", cfg => new TestModule(cfg))
                 .Build();
             Assert.True(componentResult.IsSuccess);
 
@@ -111,7 +111,7 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
         {
             // Arrange
             var componentResult = ComponentBuilder.CreateNew()
-                .WithModule<TestModule, TestConfiguration>(cfg => cfg.Value = "ResultValue")
+                .WithModule<TestModule, TestConfiguration>(cfg => cfg.Value = "ResultValue", cfg => new TestModule(cfg))
                 .Build();
 
             // Act
@@ -142,7 +142,7 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
         {
             // Arrange & Act
             var result = ComponentBuilder.CreateNew()
-                .WithModule<TestModule, TestConfiguration>(cfg => cfg.Value = "BuilderValue")
+                .WithModule<TestModule, TestConfiguration>(cfg => cfg.Value = "BuilderValue", cfg => new TestModule(cfg))
                 .BuildServiceProvider();
 
             // Assert
@@ -197,12 +197,12 @@ namespace Baubit.DI.Extensions.Test.ComponentBuilderExtensionsTests
         public string GetName() => "ExistingService";
     }
 
-    public class TestConfiguration : AConfiguration
+    public class TestConfiguration : Configuration
     {
         public string Value { get; set; } = string.Empty;
     }
 
-    public class TestModule : AModule<TestConfiguration>
+    public class TestModule : Module<TestConfiguration>
     {
         public TestModule(TestConfiguration configuration, List<IModule>? nestedModules = null)
             : base(configuration, nestedModules)

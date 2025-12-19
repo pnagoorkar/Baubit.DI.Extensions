@@ -21,10 +21,11 @@ namespace Baubit.DI.Extensions
         /// <returns>The service collection for fluent chaining.</returns>
         /// <exception cref="InvalidOperationException">Thrown when module loading fails.</exception>
         public static IServiceCollection AddModule<TModule, TConfiguration>(this IServiceCollection services,
-                                                                            Action<TConfiguration> configureAction) where TModule : AModule<TConfiguration> where TConfiguration : AConfiguration
+                                                                            Action<TConfiguration> configureAction, 
+                                                                            Func<TConfiguration, TModule> moduleFactory) where TModule : Module<TConfiguration> where TConfiguration : Configuration
         {
             var result = ComponentBuilder.CreateNew()
-                                         .WithModule<TModule, TConfiguration>(configureAction)
+                                         .WithModule<TModule, TConfiguration>(configureAction, moduleFactory)
                                          .Build()
                                          .Bind(component => component.LoadModules(services));
             if (result.IsFailed)
@@ -42,10 +43,11 @@ namespace Baubit.DI.Extensions
         /// <returns>The service collection for fluent chaining.</returns>
         /// <exception cref="InvalidOperationException">Thrown when module loading fails.</exception>
         public static IServiceCollection AddModule<TModule, TConfiguration>(this IServiceCollection services,
-                                                                            Action<ConfigurationBuilder<TConfiguration>> configureAction) where TModule : AModule<TConfiguration> where TConfiguration : AConfiguration
+                                                                            Action<ConfigurationBuilder<TConfiguration>> configureAction,
+                                                                            Func<TConfiguration, TModule> moduleFactory) where TModule : Module<TConfiguration> where TConfiguration : Configuration
         {
             var result = ComponentBuilder.CreateNew()
-                                         .WithModule<TModule, TConfiguration>(configureAction)
+                                         .WithModule<TModule, TConfiguration>(configureAction, moduleFactory)
                                          .Build()
                                          .Bind(component => component.LoadModules(services));
             if (result.IsFailed)
