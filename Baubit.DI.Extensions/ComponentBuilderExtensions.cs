@@ -18,7 +18,6 @@ namespace Baubit.DI.Extensions
         /// <typeparam name="TConfiguration">The configuration type for the module.</typeparam>
         /// <param name="services">The service collection to add the module to.</param>
         /// <param name="configureAction">Action to configure the module.</param>
-        /// <param name="moduleFactory">Factory function to create the module from configuration.</param>
         /// <returns>The service collection for fluent chaining.</returns>
         /// <exception cref="InvalidOperationException">Thrown when module loading fails.</exception>
         public static IServiceCollection AddModule<TModule, TConfiguration>(this IServiceCollection services,
@@ -41,7 +40,6 @@ namespace Baubit.DI.Extensions
         /// <typeparam name="TConfiguration">The configuration type for the module.</typeparam>
         /// <param name="services">The service collection to add the module to.</param>
         /// <param name="configureAction">Action to configure the module using a configuration builder.</param>
-        /// <param name="moduleFactory">Factory function to create the module from configuration.</param>
         /// <returns>The service collection for fluent chaining.</returns>
         /// <exception cref="InvalidOperationException">Thrown when module loading fails.</exception>
         public static IServiceCollection AddModule<TModule, TConfiguration>(this IServiceCollection services,
