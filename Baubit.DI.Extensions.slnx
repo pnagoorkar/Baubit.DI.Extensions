@@ -2,6 +2,9 @@
   <Folder Name="/SolutionItems/">
     <File Path=".circleci/config.yml" />
     <File Path=".github/copilot-instructions.md" />
+    <File Path="codecov.yml" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
   </Folder>
   <Project Path="Baubit.DI.Extensions.Test/Baubit.DI.Extensions.Test.csproj" Id="ff1e6fad-b4a1-4347-9746-8dd7b776f7a6" />
   <Project Path="Baubit.DI.Extensions/Baubit.DI.Extensions.csproj" />
